@@ -1,11 +1,14 @@
 package com.codepath.apps.restclienttemplate;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.codepath.apps.restclienttemplate.adapters.TweetAdapter;
@@ -15,6 +18,7 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.parceler.Parcels;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +26,7 @@ import java.util.List;
 import cz.msebera.android.httpclient.Header;
 
 public class TimeLineActivity extends AppCompatActivity {
+    public static final int REQUESTCODE = 20;
     private SwipeRefreshLayout swipeContainer;
     private static final String TwitterClient = "TwitterClient";
     private TwitterClient client;
@@ -69,6 +74,33 @@ public class TimeLineActivity extends AppCompatActivity {
 
     public void fetchTimelineAsync(int page) {
         populateHomeTimeLine();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //inflate the menu; this adds items to action bar if they are present
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.compose) { //compose icon tapped
+            Intent intent = new Intent(this, ComposeActivity.class);
+            startActivityForResult(intent, REQUESTCODE);
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUESTCODE) {
+            if (resultCode == RESULT_OK) {
+                Tweet newTweet = Parcels.unwrap(data.getParcelableExtra(ComposeActivity.NEW_TWEET));
+                tweetList.add(0, newTweet);
+                tweetAdapter.notifyItemInserted(0);
+            }
+        }
     }
 
     private void populateHomeTimeLine() {
